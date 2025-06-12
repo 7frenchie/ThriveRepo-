@@ -1,0 +1,278 @@
+// Firestore Indexes Configuration
+// These indexes should be created in the Firebase Console or via Firebase CLI
+
+// Composite Indexes for efficient queries
+const firestoreIndexes = [
+  // Health Data Indexes
+  {
+    collectionGroup: "healthData",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "date", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "healthData",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+
+  // Community Indexes
+  {
+    collectionGroup: "communities",
+    fields: [
+      { fieldPath: "type", order: "ASCENDING" },
+      { fieldPath: "memberCount", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "communities",
+    fields: [
+      { fieldPath: "category", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "communities",
+    fields: [
+      { fieldPath: "isPrivate", order: "ASCENDING" },
+      { fieldPath: "memberCount", order: "DESCENDING" }
+    ]
+  },
+
+  // Challenge Indexes
+  {
+    collectionGroup: "challenges",
+    fields: [
+      { fieldPath: "status", order: "ASCENDING" },
+      { fieldPath: "startDate", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "challenges",
+    fields: [
+      { fieldPath: "type", order: "ASCENDING" },
+      { fieldPath: "difficulty", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "challenges",
+    fields: [
+      { fieldPath: "communityId", order: "ASCENDING" },
+      { fieldPath: "status", order: "ASCENDING" },
+      { fieldPath: "startDate", order: "DESCENDING" }
+    ]
+  },
+
+  // Challenge Participants Indexes
+  {
+    collectionGroup: "challengeParticipants",
+    fields: [
+      { fieldPath: "status", order: "ASCENDING" },
+      { fieldPath: "progress.percentage", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "challengeParticipants",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "joinedAt", order: "DESCENDING" }
+    ]
+  },
+
+  // Posts Indexes
+  {
+    collectionGroup: "posts",
+    fields: [
+      { fieldPath: "communityId", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "posts",
+    fields: [
+      { fieldPath: "authorId", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "posts",
+    fields: [
+      { fieldPath: "type", order: "ASCENDING" },
+      { fieldPath: "likes", order: "DESCENDING" }
+    ]
+  },
+
+  // Notifications Indexes
+  {
+    collectionGroup: "notifications",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "isRead", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "notifications",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "type", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+
+  // AI Insights Indexes
+  {
+    collectionGroup: "aiInsights",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "priority", order: "DESCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+  {
+    collectionGroup: "aiInsights",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "category", order: "ASCENDING" },
+      { fieldPath: "createdAt", order: "DESCENDING" }
+    ]
+  },
+
+  // User Achievements Indexes
+  {
+    collectionGroup: "userAchievements",
+    fields: [
+      { fieldPath: "userId", order: "ASCENDING" },
+      { fieldPath: "earnedAt", order: "DESCENDING" }
+    ]
+  }
+];
+
+// Security Rules for Firestore
+const firestoreRules = `
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Health data is private to the user
+    match /healthData/{documentId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Communities are readable by all authenticated users
+    match /communities/{communityId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.createdBy;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.createdBy || 
+         request.auth.uid in resource.data.admins);
+      
+      // Community members subcollection
+      match /members/{userId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Challenges are readable by all authenticated users
+    match /challenges/{challengeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.createdBy;
+      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
+      
+      // Challenge participants subcollection
+      match /participants/{userId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Posts are readable by community members
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.authorId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+    
+    // Achievements are readable by all authenticated users
+    match /achievements/{achievementId} {
+      allow read: if request.auth != null;
+    }
+    
+    // User achievements are private to the user
+    match /users/{userId}/achievements/{achievementId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Notifications are private to the user
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // AI insights are private to the user
+    match /aiInsights/{insightId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}
+`;
+
+// Cloud Functions Triggers
+const cloudFunctionsTriggers = [
+  // User creation trigger
+  {
+    name: "onUserCreate",
+    trigger: "auth.user().onCreate",
+    description: "Initialize user document when account is created"
+  },
+  
+  // Health data analysis trigger
+  {
+    name: "onHealthDataWrite",
+    trigger: "firestore.document('healthData/{documentId}').onWrite",
+    description: "Analyze health data and generate AI insights"
+  },
+  
+  // Challenge progress update trigger
+  {
+    name: "onChallengeParticipantUpdate",
+    trigger: "firestore.document('challenges/{challengeId}/participants/{userId}').onUpdate",
+    description: "Update challenge leaderboards and check completion"
+  },
+  
+  // Achievement unlock trigger
+  {
+    name: "onAchievementUnlock",
+    trigger: "firestore.document('users/{userId}/achievements/{achievementId}').onCreate",
+    description: "Send notification when user unlocks achievement"
+  },
+  
+  // Community post trigger
+  {
+    name: "onPostCreate",
+    trigger: "firestore.document('posts/{postId}').onCreate",
+    description: "Notify community members of new posts"
+  },
+  
+  // Daily health summary trigger
+  {
+    name: "dailyHealthSummary",
+    trigger: "pubsub.schedule('0 6 * * *')",
+    description: "Generate daily health summaries for all users"
+  }
+];
+
+export {
+  firestoreIndexes,
+  firestoreRules,
+  cloudFunctionsTriggers
+};
