@@ -1,0 +1,337 @@
+// Firestore Database Schema Examples
+// Use these as reference for setting up your Firestore collections
+
+// Users Collection Structure
+const userSchema = {
+  // Document ID: user.uid from Firebase Auth
+  email: "user@example.com",
+  name: "John Doe",
+  avatar: "https://example.com/avatar.jpg", // optional
+  createdAt: "2024-01-15T10:30:00Z",
+  updatedAt: "2024-01-15T10:30:00Z",
+  preferences: {
+    theme: "system", // 'light' | 'dark' | 'system'
+    notifications: {
+      push: true,
+      email: false,
+      challenges: true,
+      social: true
+    },
+    privacy: {
+      profile: "public", // 'public' | 'friends' | 'private'
+      healthData: "private",
+      achievements: "public"
+    },
+    units: {
+      distance: "km", // 'km' | 'miles'
+      weight: "kg", // 'kg' | 'lbs'
+      temperature: "celsius" // 'celsius' | 'fahrenheit'
+    }
+  },
+  subscription: {
+    tier: "free", // 'free' | 'premium'
+    expiresAt: null, // timestamp for premium users
+    features: ["basic_tracking", "community_access"]
+  },
+  stats: {
+    totalPoints: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    challengesCompleted: 0,
+    communitiesJoined: 0
+  }
+};
+
+// Health Data Collection Structure
+const healthDataSchema = {
+  // Document ID: auto-generated
+  userId: "user_document_id",
+  date: "2024-01-15", // YYYY-MM-DD format
+  metrics: {
+    steps: 8247,
+    heartRate: {
+      resting: 62,
+      max: 180,
+      average: 85
+    },
+    sleep: {
+      duration: 7.5, // hours
+      quality: 85, // percentage
+      deepSleep: 1.5,
+      remSleep: 1.8,
+      bedtime: "23:30",
+      wakeTime: "07:00"
+    },
+    activity: {
+      activeMinutes: 45,
+      calories: 456,
+      distance: 6.2, // km
+      workouts: [
+        {
+          type: "running",
+          duration: 30, // minutes
+          calories: 300,
+          startTime: "07:00",
+          endTime: "07:30"
+        }
+      ]
+    },
+    nutrition: {
+      calories: 2156,
+      water: 2.1, // liters
+      protein: 125, // grams
+      carbs: 250,
+      fat: 80
+    },
+    vitals: {
+      weight: 72.5, // kg
+      bodyFat: 15.2, // percentage
+      bloodPressure: {
+        systolic: 120,
+        diastolic: 80
+      },
+      bloodOxygen: 98 // percentage
+    }
+  },
+  goals: {
+    steps: 10000,
+    activeMinutes: 60,
+    sleep: 8.0,
+    water: 2.5,
+    calories: 2200
+  },
+  createdAt: "2024-01-15T10:30:00Z",
+  updatedAt: "2024-01-15T10:30:00Z",
+  syncedFrom: "apple_health" // 'manual' | 'apple_health' | 'google_fit' | 'fitbit'
+};
+
+// Communities Collection Structure
+const communitySchema = {
+  // Document ID: auto-generated
+  name: "Morning Warriors",
+  description: "Early birds crushing their fitness goals together",
+  type: "free", // 'free' | 'premium'
+  category: "fitness", // 'fitness' | 'nutrition' | 'sleep' | 'mental_health'
+  image: "https://example.com/community-image.jpg",
+  memberCount: 2847,
+  isPrivate: false,
+  location: {
+    type: "global", // 'global' | 'local'
+    city: null,
+    country: null,
+    coordinates: null
+  },
+  createdBy: "user_document_id",
+  admins: ["user_document_id"],
+  moderators: [],
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-15T10:30:00Z",
+  settings: {
+    allowInvites: true,
+    requireApproval: false,
+    maxMembers: null,
+    allowChallenges: true,
+    allowPosts: true
+  },
+  stats: {
+    postsCount: 1250,
+    challengesCount: 15,
+    activeMembers: 1890
+  }
+};
+
+// Community Members Subcollection
+const communityMemberSchema = {
+  // Document ID: user_document_id
+  userId: "user_document_id",
+  role: "member", // 'member' | 'moderator' | 'admin'
+  joinedAt: "2024-01-10T15:20:00Z",
+  lastActive: "2024-01-15T09:45:00Z",
+  points: 450,
+  badges: ["early_bird", "consistent_tracker"],
+  notifications: {
+    posts: true,
+    challenges: true,
+    achievements: true
+  }
+};
+
+// Challenges Collection Structure
+const challengeSchema = {
+  // Document ID: auto-generated
+  title: "10K Steps Daily",
+  description: "Complete 10,000 steps every day this week",
+  type: "individual", // 'individual' | 'group'
+  category: "activity",
+  difficulty: "medium", // 'easy' | 'medium' | 'hard'
+  duration: 7, // days
+  startDate: "2024-01-15T00:00:00Z",
+  endDate: "2024-01-22T23:59:59Z",
+  participants: ["user_id_1", "user_id_2"], // array of user IDs
+  maxParticipants: null, // null for unlimited
+  communityId: "community_document_id", // optional
+  goals: {
+    metric: "steps",
+    target: 10000,
+    unit: "steps",
+    frequency: "daily" // 'daily' | 'weekly' | 'total'
+  },
+  rewards: {
+    points: 100,
+    badges: ["step_master"],
+    prizes: ["Golden Walker Badge"]
+  },
+  rules: [
+    "Complete 10,000 steps each day",
+    "Data must be synced daily",
+    "No manual entries allowed"
+  ],
+  createdBy: "user_document_id",
+  createdAt: "2024-01-14T12:00:00Z",
+  updatedAt: "2024-01-15T10:30:00Z",
+  status: "active", // 'draft' | 'active' | 'completed' | 'cancelled'
+  featured: false,
+  stats: {
+    participantCount: 1247,
+    completionRate: 0.65,
+    averageProgress: 0.78
+  }
+};
+
+// Challenge Participants Subcollection
+const challengeParticipantSchema = {
+  // Document ID: user_document_id
+  userId: "user_document_id",
+  joinedAt: "2024-01-15T08:00:00Z",
+  progress: {
+    current: 65000, // current progress value
+    percentage: 65, // percentage complete
+    dailyProgress: [
+      { date: "2024-01-15", value: 8500, completed: false },
+      { date: "2024-01-16", value: 12000, completed: true }
+    ]
+  },
+  status: "active", // 'active' | 'completed' | 'failed' | 'withdrawn'
+  completedAt: null,
+  rank: 156,
+  points: 45
+};
+
+// Posts Collection Structure (for community posts)
+const postSchema = {
+  // Document ID: auto-generated
+  authorId: "user_document_id",
+  communityId: "community_document_id",
+  content: "Just completed my morning run! 5K in 25 minutes 🏃‍♂️",
+  type: "text", // 'text' | 'image' | 'workout' | 'achievement'
+  attachments: [
+    {
+      type: "image",
+      url: "https://example.com/workout-photo.jpg",
+      caption: "Post-run selfie"
+    }
+  ],
+  metadata: {
+    workout: {
+      type: "running",
+      duration: 25,
+      distance: 5.0,
+      calories: 350
+    }
+  },
+  likes: 23,
+  comments: 5,
+  shares: 2,
+  createdAt: "2024-01-15T07:30:00Z",
+  updatedAt: "2024-01-15T07:30:00Z",
+  isEdited: false,
+  isPinned: false,
+  tags: ["running", "morning", "5k"]
+};
+
+// Achievements Collection Structure
+const achievementSchema = {
+  // Document ID: achievement_id
+  id: "first_steps",
+  title: "First Steps",
+  description: "Complete your first day of step tracking",
+  icon: "👣",
+  category: "activity",
+  rarity: "common", // 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  points: 10,
+  requirements: {
+    metric: "steps",
+    value: 1000,
+    timeframe: "daily"
+  },
+  isActive: true,
+  createdAt: "2024-01-01T00:00:00Z"
+};
+
+// User Achievements Subcollection
+const userAchievementSchema = {
+  // Document ID: achievement_id
+  achievementId: "first_steps",
+  earnedAt: "2024-01-15T10:30:00Z",
+  progress: {
+    current: 1000,
+    required: 1000,
+    percentage: 100
+  },
+  isNotified: true
+};
+
+// Notifications Collection Structure
+const notificationSchema = {
+  // Document ID: auto-generated
+  userId: "user_document_id",
+  type: "achievement", // 'achievement' | 'challenge' | 'social' | 'system'
+  title: "New Achievement Unlocked!",
+  message: "You've earned the 'First Steps' badge",
+  data: {
+    achievementId: "first_steps",
+    points: 10
+  },
+  isRead: false,
+  createdAt: "2024-01-15T10:30:00Z",
+  expiresAt: "2024-02-15T10:30:00Z" // optional
+};
+
+// AI Insights Collection Structure
+const aiInsightSchema = {
+  // Document ID: auto-generated
+  userId: "user_document_id",
+  type: "trend", // 'trend' | 'recommendation' | 'warning' | 'achievement'
+  category: "sleep",
+  title: "Sleep Pattern Improvement",
+  message: "Your sleep quality has improved by 15% this week. Keep up the consistent bedtime routine!",
+  confidence: 0.85, // AI confidence score
+  priority: "medium", // 'low' | 'medium' | 'high'
+  data: {
+    metric: "sleep_quality",
+    trend: "improving",
+    change: 0.15,
+    timeframe: "week"
+  },
+  actionItems: [
+    "Continue your 10:30 PM bedtime",
+    "Consider reducing screen time before bed"
+  ],
+  isRead: false,
+  createdAt: "2024-01-15T10:30:00Z",
+  expiresAt: "2024-01-22T10:30:00Z"
+};
+
+export {
+  userSchema,
+  healthDataSchema,
+  communitySchema,
+  communityMemberSchema,
+  challengeSchema,
+  challengeParticipantSchema,
+  postSchema,
+  achievementSchema,
+  userAchievementSchema,
+  notificationSchema,
+  aiInsightSchema
+};
